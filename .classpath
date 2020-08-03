@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry excluding="_svn/|com/_svn/|com/inflectra/_svn/|com/inflectra/spiratest/_svn/|com/inflectra/spiratest/addons/_svn/|com/inflectra/spiratest/addons/testnglistener/_svn/|com/inflectra/spiratest/addons/testnglistener/samples/_svn/" kind="src" path=""/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Program Files/Java/testng-5.7-jdk15.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files/Java/selenium-java-client-driver.jar"/>
-	<classpathentry kind="output" path=""/>
-</classpath>

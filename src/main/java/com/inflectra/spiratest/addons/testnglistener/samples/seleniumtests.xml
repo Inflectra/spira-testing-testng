@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="SampleTests" verbose="1">
+	<test name="SeleniumTest">
+		<groups>
+			<run>
+				<include name="seleniumtest" />
+				<exclude name="unittest" />
+			</run> 
+		</groups>
+		<packages>
+			<package name="com.inflectra.spiratest.addons.testnglistener.samples" />
+		</packages>
+	</test>
+</suite>
