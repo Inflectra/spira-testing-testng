@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.inflectra.spiratest.addons</groupId>
+	<artifactId>testnglistener</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Spira TestNG Listener</name>
+	<description>TestNG Listener Addon for SpiraTest</description>
+	<packaging>jar</packaging>
+
+	<properties>
+		<java.version>11</java.version>
+		<source>${java.version}</source>
+		<target>${java.version}</target>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+
+				<plugin>
+					<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+						<executable>${java.home}/bin/javac</executable>
+						<debug>true</debug>
+						<verbose>false</verbose>
+						<encoding>UTF-8</encoding>
+					</configuration>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<dependencies>
+
+		<!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium.client-drivers/selenium-java-client-driver -->
+		<dependency>
+			<groupId>org.seleniumhq.selenium.client-drivers</groupId>
+			<artifactId>selenium-java-client-driver</artifactId>
+			<version>1.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.testng/testng -->
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>7.1.0</version>
+		</dependency>
+
+		<!-- Needed for Spira TestNG Listener with Java 11 -->
+		<!-- https://mvnrepository.com/artifact/javax.xml.ws/jaxws-api -->
+		<!-- <dependency> -->
+		<!-- <groupId>javax.xml.ws</groupId> -->
+		<!-- <artifactId>jaxws-api</artifactId> -->
+		<!-- <version>2.3.1</version> -->
+		<!-- </dependency> -->
+
+		<!-- Needed for Spira TestNG Listener with Java 11 -->
+		<!-- https://mvnrepository.com/artifact/com.sun.xml.ws/rt -->
+		<dependency>
+			<groupId>com.sun.xml.ws</groupId>
+			<artifactId>rt</artifactId>
+			<version>2.3.3-b01</version>
+		</dependency>
+
+		<!-- Needed for Spira TestNG Listener with Java 11 -->
+		<!-- https://mvnrepository.com/artifact/org.glassfish.main.javaee-api/javax.jws -->
+		<dependency>
+			<groupId>org.glassfish.main.javaee-api</groupId>
+			<artifactId>javax.jws</artifactId>
+			<version>3.1.2.2</version>
+		</dependency>
+
+	</dependencies>
+
+</project>

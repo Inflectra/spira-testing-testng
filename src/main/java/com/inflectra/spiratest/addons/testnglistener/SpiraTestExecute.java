@@ -1,27 +1,26 @@
 package com.inflectra.spiratest.addons.testnglistener;
 
-import java.util.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.xml.namespace.QName;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Map;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.ws.*;
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.WebServiceException;
 
-import java.text.*;
-
-import com.inflectra.spiratest.addons.testnglistener.SSLUtilities;
 import com.inflectra.spiratest.addons.testnglistener.soap.IImportExport;
 import com.inflectra.spiratest.addons.testnglistener.soap.IImportExportConnectionAuthenticate2ServiceFaultMessageFaultFaultMessage;
 import com.inflectra.spiratest.addons.testnglistener.soap.IImportExportConnectionConnectToProjectServiceFaultMessageFaultFaultMessage;
 import com.inflectra.spiratest.addons.testnglistener.soap.IImportExportTestRunRecordAutomated1ServiceFaultMessageFaultFaultMessage;
 import com.inflectra.spiratest.addons.testnglistener.soap.ImportExport;
 import com.inflectra.spiratest.addons.testnglistener.soap.RemoteAutomatedTestRun;
-import com.sun.xml.internal.ws.client.ClientTransportException;
-import com.sun.xml.internal.ws.wsdl.parser.InaccessibleWSDLException;
 
 /**
  * This defines the 'SpiraTestExecute' class that provides the Java facade
@@ -94,7 +93,7 @@ String runnerName, String runnerTestName, int runnerAssertCount, String runnerMe
 				//Ignore as the port will be left as null
 			}
 			
-			//If both are NULL, throw exception
+			//If both are NULL, throw com.exception
 			if (soap == null && soap1 == null)
 			{
 				//Display the error
@@ -124,18 +123,18 @@ String runnerName, String runnerTestName, int runnerAssertCount, String runnerMe
 			{
 				success = soap.connectionAuthenticate2(this.userName, this.password, SPIRA_PLUG_IN_NAME);
 			}
-			catch (InaccessibleWSDLException ex)
+			catch (Exception ex)
 			{
 				//Try using the second binding
 				soap = soap1;
 				success = soap.connectionAuthenticate2(this.userName, this.password, SPIRA_PLUG_IN_NAME);
 			}
-			catch (ClientTransportException ex)
-			{
-				//Try using the second binding
-				soap = soap1;
-				success = soap.connectionAuthenticate2(this.userName, this.password, SPIRA_PLUG_IN_NAME);
-			}
+//			catch (ClientTransportException ex)
+//			{
+//				//Try using the second binding
+//				soap = soap1;
+//				success = soap.connectionAuthenticate2(this.userName, this.password, SPIRA_PLUG_IN_NAME);
+//			}
 			if (!success)
 			{
 				//Display the error
