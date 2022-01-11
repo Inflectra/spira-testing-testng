@@ -9,16 +9,16 @@ import com.inflectra.spiratest.addons.testnglistener.*;
  * Some simple tests using the ability to return results back to SpiraTest
  * 
  * @author		Inflectra Corporation
- * @version		3.0.0
+ * @version		4.0.0
  *
  */
 @SpiraTestConfiguration(
 	url="http://localhost/Spira",
 	login="fredbloggs",
-	password="fredbloggs",
+	apiKey="{00000000-0000-0000-0000-000000000000}",
 	projectId=1,
-	releaseId=1,
-	testSetId=1
+	releaseId=-1,
+	testSetId=-1
 )
 @Test(groups={"unittest"})
 public class SimpleTest
@@ -40,7 +40,7 @@ public class SimpleTest
 	 * Tests the addition of the two values
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=5)
+	@SpiraTestCase(testCaseId=201)
 	public void testAdd()
 	{
 		double result = fValue1 + fValue2;
@@ -53,7 +53,7 @@ public class SimpleTest
 	 * Tests division by zero
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=5)
+	@SpiraTestCase(testCaseId=201)
 	public void testDivideByZero()
 	{
 		int zero = 0;
@@ -65,7 +65,7 @@ public class SimpleTest
 	 * Tests two equal values
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=6)
+	@SpiraTestCase(testCaseId=201)
 	public void testEquals()
 	{
 		assertEquals(12, 12);
@@ -80,7 +80,7 @@ public class SimpleTest
 	 * Tests success
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=6)
+	@SpiraTestCase(testCaseId=201)
 	public void testSuccess()
 	{
 		//Successful test
@@ -91,7 +91,7 @@ public class SimpleTest
 	 * Tests parameterized methods
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=2)
+	@SpiraTestCase(testCaseId=199)
 	@Parameters({"login", "password"})
 	public void testParameters(String login, String password)
 	{		

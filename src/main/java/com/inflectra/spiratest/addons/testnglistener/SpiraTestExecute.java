@@ -1,274 +1,184 @@
 package com.inflectra.spiratest.addons.testnglistener;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Map;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.WebServiceException;
-
-import com.inflectra.spiratest.addons.testnglistener.soap.IImportExport;
-import com.inflectra.spiratest.addons.testnglistener.soap.IImportExportConnectionAuthenticate2ServiceFaultMessageFaultFaultMessage;
-import com.inflectra.spiratest.addons.testnglistener.soap.IImportExportConnectionConnectToProjectServiceFaultMessageFaultFaultMessage;
-import com.inflectra.spiratest.addons.testnglistener.soap.IImportExportTestRunRecordAutomated1ServiceFaultMessageFaultFaultMessage;
-import com.inflectra.spiratest.addons.testnglistener.soap.ImportExport;
-import com.inflectra.spiratest.addons.testnglistener.soap.RemoteAutomatedTestRun;
+import com.google.gson.*;
 
 /**
  * This defines the 'SpiraTestExecute' class that provides the Java facade
- * for calling the SOAP web service exposed by SpiraTest
+ * for calling the REST web service exposed by SpiraTest
  * 
  * @author		Inflectra Corporation
- * @version		3.0.1
+ * @version		4.0.0
  *
  */
-public class SpiraTestExecute
-{
+public class SpiraTestExecute {
 	private static final String WEB_SERVICE_SUFFIX = "/Services/v3_0/ImportExport.svc?WSDL";
-	private static final String WEB_SERVICE_NAMESPACE = "{http://www.inflectra.com/SpiraTest/Services/v3.0/}ImportExport";
-	private static final String WEB_SERVICE_NAMESPACE_DATA_OBJECTS = "http://schemas.datacontract.org/2004/07/Inflectra.SpiraTest.Web.Services.v3_0.DataObjects";
+	/**
+	 * The URL appended to the base URL to access REST. Note that it ends with a slash
+	 */
+	private static final String REST_SERVICE_URL = "/services/v5_0/RestService.svc/";
 
-	private static final String SPIRA_PLUG_IN_NAME = "JUnit Extension";
-	
 	public String url;
 	public String userName;
-	public String password;
+	public String token;
 	public int projectId;
 
 	/**
+	 * Performs an HTTP POST request ot the specified URL
+	 *
+	 * @param input The URL to perform the query on
+	 * @param body  The request body to be sent
+	 * @return An InputStream containing the JSON returned from the POST request
+	 * @throws IOException
+	 */
+	public static String httpPost(String input, String body) throws IOException {
+		URL url = new URL(input);
+
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		//allow sending a request body
+		connection.setRequestMethod("POST");
+		connection.setDoOutput(true);
+
+		//have the connection send and retrieve JSON
+		connection.setRequestProperty("accept", "application/json; charset=utf-8");
+		connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+		OutputStream os = connection.getOutputStream();
+		os.write(body.getBytes());
+		os.flush();
+		os.close();
+
+		int responseCode = connection.getResponseCode();
+
+		String httpResponse = "";
+
+		//getting the response
+		if (100 <= responseCode && responseCode <= 399) {
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					connection.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+
+			httpResponse = response.toString();
+		}
+		return httpResponse;
+	}
+
+
+	/**
 	 * Records a test run
-	 * 
-		@param testerUserId			The user id of the person who's running the test (null for logged in user)
-		@param testCaseId			The test case being executed
-		@param releaseId			The release being executed against (optional)
-		@param testSetId			The test set being executed against (optional)
-		@param executionStatusId	The status of the test run (pass/fail/not run)
-		@param runnerName			The name of the automated testing tool
-		@param runnerTestName		The name of the test as stored in JUnit
-		@param runnerAssertCount	The number of assertions
-		@param runnerMessage		The failure message (if appropriate)
-		@param runnerStackTrace		The error stack trace (if any)
-		@param endDate				When the test run ended
-		@param startDate			When the test run started
+	 *
+	 * @param testCaseId        The test case being executed
+	 * @param releaseId         The release being executed against (optional)
+	 * @param testSetId         The test set being executed against (optional)
+	 * @param executionStatusId The status of the test run (pass/fail/not run)
+	 * @param runnerName        The name of the automated testing tool
+	 * @param runnerTestName    The name of the test as stored in JUnit
+	 * @param runnerAssertCount The number of assertions
+	 * @param runnerMessage     The failure message (if appropriate)
+	 * @param runnerStackTrace  The error stack trace (if any)
+	 * @param endDate           When the test run ended
+	 * @param startDate         When the test run started
+	 * @return ID of the new test run
 	 */
-	public int recordTestRun(Integer testerUserId, int testCaseId, Integer releaseId, Integer testSetId, Date startDate, Date endDate, int executionStatusId, 
+	public int recordTestRun(int testCaseId, Integer releaseId, Integer testSetId, Date startDate,
+							  Date endDate, int executionStatusId, String runnerName, String runnerTestName, int runnerAssertCount,
+							  String runnerMessage, String runnerStackTrace) {
+		String url = this.url + REST_SERVICE_URL + "projects/" + this.projectId + "/test-runs/record?username=" + this.userName + "&api-key=" + this.token;
 
-String runnerName, String runnerTestName, int runnerAssertCount, String runnerMessage, String runnerStackTrace) 
-	{	
-		//Instantiate the soap proxy
-		try
-		{
-			//Trust all SSL certificates
-			SSLUtilities.trustAllHttpsCertificates();
-			
-			//Break up the URL into server name and the service path
-			URL serviceUrl = new URL(this.url + WEB_SERVICE_SUFFIX);
+		Gson gson = new Gson();
 
-			ImportExport service = new ImportExport(serviceUrl, QName.valueOf(WEB_SERVICE_NAMESPACE));
-			//Try both the HTTP and HTTPS ports
-			IImportExport soap = null;
-			IImportExport soap1 = null;
-			try
-			{
-				soap = service.getBasicHttpBindingIImportExport();
-			}
-			catch (WebServiceException ex)
-			{
-				//Ignore as the port will be left as null
-			}
-			try
-			{
-				soap1 = service.getBasicHttpBindingIImportExport1();
-			}
-			catch (WebServiceException ex)
-			{
-				//Ignore as the port will be left as null
-			}
-			
-			//If both are NULL, throw com.exception
-			if (soap == null && soap1 == null)
-			{
-				//Display the error
-				System.out.print ("Unable to connect with either the SpiraTest HTTP or HTTPS APIs. Please check the URL and try again\n\n");
-				return -1;
-			}
-			
-			//If one is NULL, simply set to the same as the other to avoid having to add NULL checks in the subsequent code
-			if (soap == null)
-			{
-				soap = soap1;
-			}
-			else
-			{
-				soap1 = soap;
-			}
-			
-			//Make sure that session is maintained
-			Map<String, Object> requestContext = ((BindingProvider)soap).getRequestContext();
-			requestContext.put(BindingProvider.SESSION_MAINTAIN_PROPERTY,true);
-			Map<String, Object> requestContext1 = ((BindingProvider)soap1).getRequestContext();
-			requestContext1.put(BindingProvider.SESSION_MAINTAIN_PROPERTY,true);
 
-			//Authenticate
-			boolean success = false;
-			try
-			{
-				success = soap.connectionAuthenticate2(this.userName, this.password, SPIRA_PLUG_IN_NAME);
-			}
-			catch (Exception ex)
-			{
-				//Try using the second binding
-				soap = soap1;
-				success = soap.connectionAuthenticate2(this.userName, this.password, SPIRA_PLUG_IN_NAME);
-			}
-//			catch (ClientTransportException ex)
-//			{
-//				//Try using the second binding
-//				soap = soap1;
-//				success = soap.connectionAuthenticate2(this.userName, this.password, SPIRA_PLUG_IN_NAME);
-//			}
-			if (!success)
-			{
-				//Display the error
-				System.out.print ("Unable to authenticate with SpiraTest server. Please check the username/password and try again\n\n");
-				return -1;
-			}
-	        
-	        //Connect to the project
-			success = soap.connectionConnectToProject(projectId);
-			if (!success)
-			{
-				System.out.print ("Unable to connect to SpiraTest project " + projectId + ", please check that the user is a member of this project\n\n");
-				return -1;
-			}
+		//create the body of the request
+		String body = "{\"TestRunFormatId\": 1, \"RunnerName\": \"" + runnerName;
+		body += "\", \"RunnerTestName\": \"" + cleanApiText(cleanText(runnerTestName)) + "\",";
+		body += "\"RunnerStackTrace\": " + cleanText(gson.toJson(runnerStackTrace)) + ",";
+		body += "\"StartDate\": \"" + formatDate(startDate) + "\", " + "\"EndDate\": \"" + formatDate(endDate) + "\",";
+		body += "\"ExecutionStatusId\": " + executionStatusId + ",\"RunnerAssertCount\": " + runnerAssertCount;
+		body += ",\"RunnerMessage\": \"" + cleanApiText(cleanText(runnerMessage)) + "\",";
+		body += "\"TestCaseId\": " + testCaseId;
 
-			//Now record the test result
-			RemoteAutomatedTestRun remoteTestRun = new RemoteAutomatedTestRun();
-			remoteTestRun.setTestCaseId(testCaseId);
-			if (releaseId != null)
-			{
-				remoteTestRun.setReleaseId(CreateJAXBInteger("ReleaseId", releaseId));
-			}
-			if (testSetId != null)
-			{
-				remoteTestRun.setTestSetId(CreateJAXBInteger("TestSetId", testSetId));
-			}
-			remoteTestRun.setStartDate(convertDatesJava2Xml(startDate));
-			remoteTestRun.setEndDate(CreateJAXBXMLGregorianCalendar("EndDate", convertDatesJava2Xml(endDate)));
-			remoteTestRun.setExecutionStatusId(executionStatusId);
-			remoteTestRun.setRunnerName(CreateJAXBString("RunnerName", runnerName));
-			remoteTestRun.setRunnerTestName(CreateJAXBString("RunnerTestName", runnerTestName));
-			remoteTestRun.setRunnerAssertCount(CreateJAXBInteger("RunnerAssertCount", runnerAssertCount));
-			remoteTestRun.setRunnerMessage(CreateJAXBString("RunnerMessage", runnerMessage));
-			remoteTestRun.setRunnerStackTrace(CreateJAXBString("RunnerStackTrace", runnerStackTrace));
-			
-			remoteTestRun = soap.testRunRecordAutomated1(remoteTestRun);
-			int testRunId = remoteTestRun.getTestRunId().getValue();
-			return testRunId;
+		if(releaseId != null && releaseId != -1) {
+			body += ", \"ReleaseId\": " + releaseId;
 		}
-		catch (WebServiceException exception)
-		{
-			//Display the error
-			System.out.print ("Error sending results to SpiraTest server (" + exception.getMessage() + ")\n\n");
-			return -1;
+		if(testSetId != null && testSetId != -1) {
+			body += ", \"TestSetId\": " + testSetId;
 		}
-		catch (IImportExportTestRunRecordAutomated1ServiceFaultMessageFaultFaultMessage exception)
-		{
-			System.out.print ("Error sending results to SpiraTest server (" + exception.getMessage() + ")\n\n");
-			return -1;
+
+		body += "}";
+
+		String httpResponse;
+		int testRunId = 0;
+
+		//send the request
+		try {
+			httpResponse = httpPost(url, body);
+			JsonObject jsonObject = JsonParser.parseString(httpResponse).getAsJsonObject();
+			testRunId = jsonObject.get("TestRunId").getAsInt();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		catch (IImportExportConnectionConnectToProjectServiceFaultMessageFaultFaultMessage exception)
-		{
-			System.out.print ("Error connecting to SpiraTest project (" + exception.getMessage() + ")\n\n");
-			return -1;
-		}
-		catch (IImportExportConnectionAuthenticate2ServiceFaultMessageFaultFaultMessage exception)
-		{
-			System.out.print ("Error authenticating with SpiraTest server (" + exception.getMessage() + ")\n\n");
-			return -1;
-		}
-		catch (MalformedURLException exception)
-		{
-			System.out.print ("Error creating URL for connecting to SpiraTest server (" + exception.getMessage() + ")\n\n");
-			return -1;
+		return testRunId;
+	}
+
+	/**
+	 * Turn the date into the format readable by Spira
+	 * @param d
+	 * @return
+	 */
+	private static String formatDate(Date d) {
+		return "/Date(" + d.getTime() + "-0000)/";
+	}
+
+	/**
+	 * Send a test run to Spira from the info in the given test run
+	 *
+	 * @return ID of the new test run
+	 */
+	public void recordTestRun(TestRun testRun) {
+		Date now = new Date();
+		recordTestRun(testRun.testCaseId, testRun.releaseId == -1 ? null : testRun.releaseId,
+				testRun.testSetId == -1 ? null : testRun.testSetId, now, now, testRun.executionStatusId,
+				"JUnit", testRun.testName, 1, testRun.message, testRun.stackTrace);
+	}
+
+	/**
+	 * Removes any invalid characters of strings being sent through the API
+	 *
+	 * @param text
+	 * @return
+	 */
+	public String cleanApiText(String text) {
+		if (text == null) {
+			return null;
+		} else {
+			String result = text.replaceAll("\\\\+", "\\\\\\\\").replaceAll("\"", "\\\\\"").replaceAll("\n", "  ");
+			return result;
 		}
 	}
-	
-	public static XMLGregorianCalendar convertDatesJava2Xml(Date date)
-	{
-		if (date == null)
-		{
+
+	/**
+	 * Removes any invalid XML contract characters from a string before being used in a SOAP call
+	 *
+	 * @param text
+	 * @return
+	 */
+	public String cleanText(String text) {
+		if (text == null) {
 			return null;
 		}
-		try
-		{
-			GregorianCalendar calendar = new GregorianCalendar();
-			calendar.setTime(date);
-			DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
-			XMLGregorianCalendar xmlCal = datatypeFactory.newXMLGregorianCalendar(calendar);
-			//We need to unset the timezone because SpiraTeam is not expected it
-			//and it will break concurrency
-			xmlCal.setTimezone(DatatypeConstants.FIELD_UNDEFINED);
-			return xmlCal;
-		}
-		catch (DatatypeConfigurationException ex)
-		{
-			return null;
-		}
+		return text.replaceAll("[\\p{Cntrl}&&[^\r\n\t]]", "");
 	}
-	
-	/***
-	 * Creates a JAXB web service string element from a Java string
-	 * @param value
-	 * @return
-	 */
-	public static JAXBElement<String> CreateJAXBString(String fieldName, String value)
-	{
-		JAXBElement<String> jaxString = new JAXBElement<String>(new QName(WEB_SERVICE_NAMESPACE_DATA_OBJECTS, fieldName), String.class, value);
-		if (value == null)
-		{
-			jaxString.setNil(true);
-		}
-		return jaxString;
-	}
-	
-	/***
-	 * Creates a JAXB web service integer element from a Java integer
-	 * @param value
-	 * @return
-	 */
-	public static JAXBElement<Integer> CreateJAXBInteger(String fieldName, Integer value)
-	{
-		JAXBElement<Integer> jaxInteger = new JAXBElement<Integer>(new QName(WEB_SERVICE_NAMESPACE_DATA_OBJECTS, fieldName), Integer.class, value);
-		if (value == null)
-		{
-			jaxInteger.setNil(true);
-		}
-		return jaxInteger;
-	}
-	
-	/***
-	 * Creates a JAXB web service XMLGregorianCalendar element from a Java XMLGregorianCalendar object
-	 * @param value
-	 * @return
-	 */
-	public static JAXBElement<XMLGregorianCalendar> CreateJAXBXMLGregorianCalendar(String fieldName, XMLGregorianCalendar value)
-	{
-		JAXBElement<XMLGregorianCalendar> jaxXMLGregorianCalendar = new JAXBElement<XMLGregorianCalendar>(new QName(WEB_SERVICE_NAMESPACE_DATA_OBJECTS, 
 
-fieldName), XMLGregorianCalendar.class, value);
-		if (value == null)
-		{
-			jaxXMLGregorianCalendar.setNil(true);
-		}
-		return jaxXMLGregorianCalendar;
-	}
 }

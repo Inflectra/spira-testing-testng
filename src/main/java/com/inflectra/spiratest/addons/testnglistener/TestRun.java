@@ -5,7 +5,7 @@ package com.inflectra.spiratest.addons.testnglistener;
  * the information relating to a single test run
  * 
  * @author		Inflectra Corporation
- * @version		1.5.1
+ * @version		2.0.0
  *
  */
 public class TestRun
@@ -16,7 +16,7 @@ public class TestRun
 	public int executionStatusId;
 	public String url;
 	public String userName;
-	public String password;
+	public String apiKey;
 	public int projectId;
 	public int releaseId;
 	public int testSetId;
