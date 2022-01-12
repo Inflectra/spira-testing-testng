@@ -40,7 +40,7 @@ public class SimpleTest
 	 * Tests the addition of the two values
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=201)
+	@SpiraTestCase(testCaseId=0)
 	public void testAdd()
 	{
 		double result = fValue1 + fValue2;
@@ -53,7 +53,7 @@ public class SimpleTest
 	 * Tests division by zero
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=201)
+	@SpiraTestCase(testCaseId=0)
 	public void testDivideByZero()
 	{
 		int zero = 0;
@@ -65,7 +65,7 @@ public class SimpleTest
 	 * Tests two equal values
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=201)
+	@SpiraTestCase(testCaseId=0)
 	public void testEquals()
 	{
 		assertEquals(12, 12);
@@ -80,7 +80,7 @@ public class SimpleTest
 	 * Tests success
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=201)
+	@SpiraTestCase(testCaseId=0)
 	public void testSuccess()
 	{
 		//Successful test
@@ -91,7 +91,7 @@ public class SimpleTest
 	 * Tests parameterized methods
 	 */
 	@Test(groups={"unittest"})
-	@SpiraTestCase(testCaseId=199)
+	@SpiraTestCase(testCaseId=0)
 	@Parameters({"login", "password"})
 	public void testParameters(String login, String password)
 	{		
