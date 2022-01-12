@@ -10,7 +10,7 @@ import java.util.*;
  * project and release information for the test being executed
  * 
  * @author		Inflectra Corporation
- * @version		3.0.1
+ * @version		4.0.0
  *
  */
 public class SpiraTestListener extends TestListenerAdapter
@@ -127,11 +127,10 @@ public class SpiraTestListener extends TestListenerAdapter
 					//Populate the web service proxy with the connection info, then execute the API method
 					spiraTestExecute.url = testRun.url;
 					spiraTestExecute.userName = testRun.userName;
-					spiraTestExecute.password = testRun.password;
+					spiraTestExecute.token = testRun.apiKey;
 					spiraTestExecute.projectId = testRun.projectId;
 					int testRunId = spiraTestExecute.recordTestRun (
-						null,
-						testRun.testCaseId,
+						 testRun.testCaseId,
 						(testRun.releaseId == -1) ? null : testRun.releaseId,
 						(testRun.testSetId == -1) ? null : testRun.testSetId,
 						now,
@@ -143,7 +142,7 @@ public class SpiraTestListener extends TestListenerAdapter
 						testRun.message,
 						testRun.stackTrace
 						);
-					if (testRunId == -1)
+					if (testRunId == -1 || testRunId == 0)
 					{
 						errorCount++;
 					}
@@ -223,7 +222,7 @@ public class SpiraTestListener extends TestListenerAdapter
 				SpiraTestConfiguration classAnnotation = testClass.getAnnotation (SpiraTestConfiguration.class);
 				testRun.url = classAnnotation.url();
 				testRun.userName = classAnnotation.login();
-				testRun.password = classAnnotation.password();
+				testRun.apiKey = classAnnotation.apiKey();
 				testRun.projectId = classAnnotation.projectId();
 				testRun.releaseId = classAnnotation.releaseId();
 				testRun.testSetId = classAnnotation.testSetId();

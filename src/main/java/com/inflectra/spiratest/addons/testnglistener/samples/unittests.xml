@@ -1,8 +1,8 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="SampleTests" verbose="1">
-  <parameter name="login" value="borrower" />
-  <parameter name="password" value="PleaseChange" />
-  <test name="SimpleTest">
+	<parameter name="login" value="borrower" />
+	<parameter name="password" value="PleaseChange" />
+	<test name="SimpleTest">
 		<groups>
 			<run>
 				<exclude name="seleniumtest" />
